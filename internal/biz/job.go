@@ -4,7 +4,6 @@ import (
 	"backend-lab-go/internal/dal"
 	"backend-lab-go/internal/model"
 	"encoding/json"
-	"log"
 )
 
 type JobBiz struct {
@@ -24,26 +23,15 @@ func (a *JobBiz) GetJobByID(id int64) (model.Job, error) {
 }
 
 func (a *JobBiz) ClaimNext() (model.Job, error) {
-	return a.jobStore.ClaimNext()
+	return a.jobStore.ClaimNext(60)
 }
 
-func (a *JobBiz) Finish(id int64, runErr error) error {
+func (a *JobBiz) Finish(id int64, token string, runErr error) error {
 	targetStatus := model.JobSucceeded
 
 	if runErr != nil {
 		targetStatus = model.JobFailed
 	}
 
-	job, err := a.jobStore.GetJobByID(id)
-	if err != nil {
-		log.Printf("Get job by id failed, id: %v", id)
-		return err
-	}
-
-	if job.Status != model.JobRunning {
-		log.Printf("Invalid job status: %v", job.Status)
-		return nil
-	}
-
-	return a.jobStore.UpdateStatus(id, job.Status, targetStatus)
+	return a.jobStore.UpdateStatus(id, model.JobRunning, targetStatus, token)
 }

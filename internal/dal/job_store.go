@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type JobStore struct {
@@ -50,7 +53,7 @@ func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
 	var job model.Job
 
 	err := s.db.QueryRow(
-		`SELECT id, title, status, ctx
+		`SELECT id, title, status, ctx, lease_token, lease_expires_at
          FROM jobs
          WHERE id = $1`,
 		id,
@@ -59,6 +62,8 @@ func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
 		&job.Title,
 		&job.Status,
 		&job.Ctx,
+		&job.LeaseToken,
+		&job.LeaseExpiresAt,
 	)
 
 	if err != nil {
@@ -68,26 +73,39 @@ func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
 	return job, nil
 }
 
-func (s *JobStore) ClaimNext() (model.Job, error) {
+func (s *JobStore) ClaimNext(duration time.Duration) (model.Job, error) {
 	job := model.Job{}
+	leaseToken, err := newLeaseToken()
+	if err != nil {
+		return model.Job{}, err
+	}
 
-	err := s.db.QueryRow(
-		`UPDATE jobs
-		SET status = 'running'
-		WHERE id = (
+	err = s.db.QueryRow(
+		`
+		WITH candidate AS (
 			SELECT id
 			FROM jobs
 			WHERE status = 'pending'
-			ORDER BY created_at, id
+				OR (status = 'running' AND lease_expires_at <= NOW())
+			ORDER BY id
 			FOR UPDATE SKIP LOCKED
 			LIMIT 1
 		)
-		RETURNING id, title, status, ctx;`,
+		UPDATE jobs AS j
+		SET status = 'running',
+			lease_token = $1,
+			lease_expires_at = NOW() + ($2 * INTERVAL '1 second')
+		FROM candidate
+		WHERE j.id = candidate.id
+		RETURNING j.id, j.title, j.status, j.ctx, j.lease_token
+		`,
+		leaseToken, duration.Seconds(),
 	).Scan(
 		&job.ID,
 		&job.Title,
 		&job.Status,
 		&job.Ctx,
+		&job.LeaseToken,
 	)
 	if err != nil {
 		return model.Job{}, err
@@ -95,12 +113,78 @@ func (s *JobStore) ClaimNext() (model.Job, error) {
 	return job, nil
 }
 
-func (s *JobStore) MarkSucceeded(id int64) error {
+func newLeaseToken() (string, error) {
+	token, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+	return token.String(), nil
+}
+
+// func (s *JobStore) MarkSucceeded(id int64) error {
+// 	result, err := s.db.Exec(
+// 		`UPDATE jobs
+// 		SET status = 'succeeded'
+// 		WHERE id = $1 AND status = 'running'`,
+// 		id,
+// 	)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	affected, err := result.RowsAffected()
+// 	if err != nil {
+// 		return err
+// 	}
+
+//		if affected == 0 {
+//			return fmt.Errorf("job %d not found or not running", id)
+//		}
+//		return nil
+//	}
+
+func (s *JobStore) UpdateStatus(
+	id int64,
+	status model.JobStatus,
+	targetStatus model.JobStatus,
+	leaseToken string,
+) error {
 	result, err := s.db.Exec(
 		`UPDATE jobs
-		SET status = 'succeeded'
-		WHERE id = $1 AND status = 'running'`,
+         SET status = $1
+         WHERE id = $2
+           AND status = $3
+           AND lease_token = $4
+           AND lease_expires_at > NOW()`,
+		targetStatus,
 		id,
+		status,
+		leaseToken,
+	)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return fmt.Errorf(
+			"job %d finish rejected: status, lease, or token no longer matches",
+			id,
+		)
+	}
+
+	return nil
+}
+
+func (s *JobStore) ExtendLease(id int64, leaseToken string) error {
+	result, err := s.db.Exec(
+		`UPDATE jobs
+		SET lease_expires_at = NOW() + (10 * INTERVAL '1 second')
+		WHERE id = $1 AND status = 'running' AND lease_token = $2 AND lease_expires_at > NOW()`,
+		id, leaseToken,
 	)
 	if err != nil {
 		return err
@@ -113,34 +197,6 @@ func (s *JobStore) MarkSucceeded(id int64) error {
 
 	if affected == 0 {
 		return fmt.Errorf("job %d not found or not running", id)
-	}
-	return nil
-}
-
-func (s *JobStore) UpdateStatus(id int64, status model.JobStatus, targetStatus model.JobStatus) error {
-	result, err := s.db.Exec(
-		`UPDATE jobs
-         SET status = $1
-         WHERE id = $2 AND status = $3`,
-		targetStatus,
-		id,
-		status,
-	)
-	if err != nil {
-		return err
-	}
-
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if affected == 0 {
-		return fmt.Errorf(
-			"job %d status transition failed: expected %s",
-			id,
-			status,
-		)
 	}
 
 	return nil

@@ -3,10 +3,12 @@ package model
 import "encoding/json"
 
 type Job struct {
-	ID     int64           `json:"id"`
-	Title  string          `json:"title"`
-	Status JobStatus       `json:"status"`
-	Ctx    json.RawMessage `json:"ctx"`
+	ID             int64           `json:"id"`
+	Title          string          `json:"title"`
+	Status         JobStatus       `json:"status"`
+	Ctx            json.RawMessage `json:"ctx"`
+	LeaseToken     string          `json:"-"`
+	LeaseExpiresAt string          `json:"-"`
 }
 
 type JobStatus string

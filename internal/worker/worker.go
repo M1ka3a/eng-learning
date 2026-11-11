@@ -53,7 +53,7 @@ func (w *Worker) Run(ctx context.Context) {
 			// 模拟执行任务
 			runErr := w.Execute(job)
 
-			if err := w.jobBiz.Finish(job.ID, runErr); err != nil {
+			if err := w.jobBiz.Finish(job.ID, job.LeaseToken, runErr); err != nil {
 				log.Printf(
 					"Mark job %d succeeded failed: %v",
 					job.ID,
