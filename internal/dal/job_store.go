@@ -121,28 +121,6 @@ func newLeaseToken() (string, error) {
 	return token.String(), nil
 }
 
-// func (s *JobStore) MarkSucceeded(id int64) error {
-// 	result, err := s.db.Exec(
-// 		`UPDATE jobs
-// 		SET status = 'succeeded'
-// 		WHERE id = $1 AND status = 'running'`,
-// 		id,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	affected, err := result.RowsAffected()
-// 	if err != nil {
-// 		return err
-// 	}
-
-//		if affected == 0 {
-//			return fmt.Errorf("job %d not found or not running", id)
-//		}
-//		return nil
-//	}
-
 func (s *JobStore) UpdateStatus(
 	id int64,
 	status model.JobStatus,
