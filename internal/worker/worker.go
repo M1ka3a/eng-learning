@@ -18,10 +18,8 @@ func NewWorker(jobBiz *biz.JobBiz) *Worker {
 	return &Worker{jobBiz: jobBiz}
 }
 
-func (w *Worker) Execute(job model.Job) error {
-	// TODO: 后续替换成真正的任务执行逻辑
-	time.Sleep(5 * time.Second)
-	return nil
+func (w *Worker) Execute(job model.Job) (model.RoutingResult, error) {
+	return w.jobBiz.RouteTicket(job.Ctx)
 }
 
 func (w *Worker) Run(ctx context.Context) {
@@ -50,19 +48,21 @@ func (w *Worker) Run(ctx context.Context) {
 
 			log.Printf("Claim job successfully, id=%d", job.ID)
 
-			// 模拟执行任务
-			runErr := w.Execute(job)
+			result, runErr := w.Execute(job)
 
-			if err := w.jobBiz.Finish(job.ID, job.LeaseToken, runErr); err != nil {
+			if err := w.jobBiz.Finish(job.ID, job.LeaseToken, result, runErr); err != nil {
 				log.Printf(
-					"Mark job %d succeeded failed: %v",
+					"Finish job %d failed: %v",
 					job.ID,
 					err,
 				)
 				continue
 			}
 
-			log.Printf("Job %d succeeded", job.ID)
+			log.Printf("Job %d finished with error: %v", job.ID, runErr)
+			if runErr == nil {
+				log.Printf("Job %d succeeded", job.ID)
+			}
 		}
 	}
 }

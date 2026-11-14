@@ -40,3 +40,18 @@ Append one concise entry after each session. Record evidence, not assumptions.
 - **Understood:** learner distinguished submission from execution readiness, noticed the need to recover a job ID for later operations, and recognized that persisted ticket data should not be named only as input. Broader requirements-to-design independence remains in progress.
 - **Transferable:** not yet demonstrated in a different use case.
 - **Open:** validate UID/description on create; define triage output and rules; replace Worker Sleep, persist result, and expose it through GET. The request UID check is not authentication; the `jsonb_set` database behavior has not been verified.
+
+## 2026-11-14 — Ticket triage example implementation checkpoint
+
+- **Decision:** learner requested the coach to commit the existing worktree, then implement the discussed ticket features as a reference to study and re-create.
+- **Implemented:** baseline commit `db07412`; coach-authored create validation, Biz phrase-based classification, Worker execution, result/error persistence under lease-token guard, GET result, UID list, and review-only SQL migration.
+- **Verified:** `go build ./...` and `git diff --check` passed. No tests were run, no migration was applied, and no database/service was accessed.
+- **Understood/Transferable:** learner has not yet explained or independently re-implemented this example; do not infer mastery from the coach-authored code.
+- **Open:** actual jobs schema compatibility, PostgreSQL behavior, classification quality, and real authentication for UID-based access.
+
+## 2026-11-14 — Classification requirement correction
+
+- **Understood:** learner challenged keyword-based automatic classification as an unjustified business rule and suggested customer or support-agent selection; this is direct evidence of requirements judgment.
+- **Decision/Implemented:** coach revised the example to require a customer-selected category at creation and to produce a routing result marked `user_selected`. Phrase matching was removed. Existing Job execution and result persistence remain in place for now.
+- **Verified:** non-database `go build ./...` and `git diff --check` passed. No tests, service run, migration, or PostgreSQL call.
+- **Open:** human review/editing is not implemented; the simple routing mapping may not justify an asynchronous Job Executor. Actual database behavior and authentication are unverified.

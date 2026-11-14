@@ -41,7 +41,10 @@ func (h *JobHandler) Create(w http.ResponseWriter, r *http.Request) {
 	job, err := h.jobBiz.Create(request.Title, request.Ctx)
 	if err != nil {
 		if errors.Is(err, model.ErrJobTitleInvalid) ||
-			errors.Is(err, model.ErrJobCtxInvalid) {
+			errors.Is(err, model.ErrJobCtxInvalid) ||
+			errors.Is(err, model.ErrJobUIDInvalid) ||
+			errors.Is(err, model.ErrJobDescriptionInvalid) ||
+			errors.Is(err, model.ErrJobCategoryInvalid) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -55,6 +58,24 @@ func (h *JobHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 
 	if err := json.NewEncoder(w).Encode(job); err != nil {
+		log.Printf("Encode response failed: %v", err)
+	}
+}
+
+// GET /jobs?uid=...
+func (h *JobHandler) ListByUID(w http.ResponseWriter, r *http.Request) {
+	jobs, err := h.jobBiz.ListByUID(r.URL.Query().Get("uid"))
+	if err != nil {
+		if errors.Is(err, model.ErrJobUIDInvalid) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		log.Printf("List jobs failed: %v", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(jobs); err != nil {
 		log.Printf("Encode response failed: %v", err)
 	}
 }

@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-Primary learning goal: translate business requirements into a small, testable software design, using text-only customer support ticket triage as the case. A partial create/supplement workflow now exists; the actual triage execution and result contract are still missing. Processing remains in Biz for the first version.
+Primary learning goal: translate business requirements into a small, testable software design. The learner challenged the coach-authored keyword classifier as an unsupported product assumption. The current ticket example uses a user-selected category and deterministic routing; it is a small routing prototype, not yet a compelling real asynchronous executor. Baseline commit `db07412` preserves the pre-example worktree. Independent learner implementation and understanding remain unestablished.
 
 ## Evidence-backed progress
 
@@ -23,12 +23,15 @@ Primary learning goal: translate business requirements into a small, testable so
 - Learner identified requirements-to-design translation as a current skill gap and chose to practice it explicitly before implementation.
 - Ticket progress: `TicketDetails` (UID, order ID, description); create selects `needs_input` or `pending`; `PATCH /jobs/{id}/input` calls Biz `AddOrderID`, which compares the stored UID and updates the order ID through a conditional DAL update that also moves the job to `pending`.
 - Learner independently noticed that clients need a way to recover job IDs and that `TicketInput` was misleading for data read from stored `ctx`.
+- Coach-authored example includes create validation, user-selected ticket category (`payment_issue`, `order_issue`, `other`), deterministic category-to-queue routing in Biz, Worker execution, atomic lease-guarded result/status persistence, GET result, and UID-based list endpoint. A review-only SQL migration file adds result/error columns and a status check.
+- Learner independently identified the phrase-based classification as a poor product assumption and proposed human or user selection instead. This is evidence of critical requirements review.
 
 ### Important limits
 
-- `internal/worker/worker.go` still uses a roughly five-second `Sleep` placeholder; implementing the text-ticket executor is now the next priority.
-- No triage result schema, classification rules, persisted result, or user-facing result retrieval exists yet. `Create` does not validate UID/description as required by the proposed contract; matching a request UID is not authentication.
-- The ticket create/supplement code compiled with `go build ./...` after the latest changes. No tests or database behavior for this workflow have been run; the `jsonb_set` update assumes `jobs.ctx` is `jsonb`.
+- Worker no longer uses the Sleep placeholder in the coach-authored example. The current category-to-queue mapping is simple enough that its need for asynchronous execution is unresolved; a genuinely useful Executor workload remains to be selected.
+- Matching a request UID is not authentication. The UID-based list endpoint is therefore only a prototype until authorization is designed.
+- The SQL migration has not been applied; the actual local jobs schema was not available in the repository and must be reviewed before use.
+- `go build ./...` and `git diff --check` passed after the coach-authored example. No tests, server run, or PostgreSQL behavior for this workflow have been verified; `jsonb_set` requires `jobs.ctx` to be `jsonb`.
 - Lease integration tests have not been run against PostgreSQL. The database environment was unavailable/inconsistent, and per the learner's boundary no service or database changes were made.
 - Earlier `go test ./...` passed with `LEASE_TEST_DATABASE_URL` explicitly unset; this predates the ticket changes and checked compilation and non-database tests only. PostgreSQL SQL/locking/time semantics remain unverified.
 - Lease renewal exists in the DAL but is not wired into the worker execution loop. Retry, idempotency, and timeout remain on the roadmap and are deferred until a real job creates a concrete need. Graceful shutdown, fault injection, and production readiness remain incomplete.
@@ -45,4 +48,4 @@ Primary learning goal: translate business requirements into a small, testable so
 
 ## Next session
 
-**Next session:** Review and finalize a small set of ticket acceptance examples and the `TriageResult` contract, then implement one complete input → Biz classification → persisted result → GET path. Review the partial create/supplement code against the contract before adding more behavior. Do not treat `go build` as database verification; Lease PostgreSQL behavior also remains unverified. Retry/idempotency/timeout stay deferred until needed by real execution.
+**Next session:** Review the revised user-selected category contract and ask whether routing should be synchronous. Select a real asynchronous workload only if it has meaningful processing needs. Study the coach-authored example against the revised requirements before re-implementing a bounded part independently. Database migration and Lease behavior remain unverified; database checks require separate authorization and a safe test environment.

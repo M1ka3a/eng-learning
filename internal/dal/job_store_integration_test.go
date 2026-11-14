@@ -72,7 +72,9 @@ func leaseTestStore(t *testing.T) *JobStore {
 		status TEXT NOT NULL DEFAULT 'pending',
 		ctx JSONB NOT NULL DEFAULT '{}'::jsonb,
 		lease_token TEXT,
-		lease_expires_at TIMESTAMPTZ
+		lease_expires_at TIMESTAMPTZ,
+		result JSONB,
+		error_message TEXT
 	)`)
 	if err != nil {
 		t.Fatal(err)

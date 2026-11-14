@@ -19,7 +19,11 @@ func NewJobStore(db *sql.DB) *JobStore {
 	return &JobStore{db: db}
 }
 
-func (s *JobStore) Create(title string, status model.JobStatus, ctx json.RawMessage) (model.Job, error) {
+func (s *JobStore) Create(title string, ctx json.RawMessage) (model.Job, error) {
+	return s.CreateWithStatus(title, model.JobPending, ctx)
+}
+
+func (s *JobStore) CreateWithStatus(title string, status model.JobStatus, ctx json.RawMessage) (model.Job, error) {
 	title = strings.TrimSpace(title)
 	if title == "" {
 		return model.Job{}, model.ErrJobTitleInvalid
@@ -50,22 +54,31 @@ func (s *JobStore) Create(title string, status model.JobStatus, ctx json.RawMess
 }
 
 func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
-	var job model.Job
-	var leaseToken sql.NullString
-	var leaseExpiresAt sql.NullTime
-
-	err := s.db.QueryRow(
-		`SELECT id, title, status, ctx, lease_token, lease_expires_at
+	return scanJob(s.db.QueryRow(
+		`SELECT id, title, status, ctx, lease_token, lease_expires_at, result, error_message
          FROM jobs
          WHERE id = $1`,
 		id,
-	).Scan(
+	))
+}
+
+type rowScanner interface{ Scan(dest ...any) error }
+
+func scanJob(row rowScanner) (model.Job, error) {
+	var job model.Job
+	var leaseToken sql.NullString
+	var leaseExpiresAt sql.NullTime
+	var result sql.NullString
+	var errorMessage sql.NullString
+	err := row.Scan(
 		&job.ID,
 		&job.Title,
 		&job.Status,
 		&job.Ctx,
 		&leaseToken,
 		&leaseExpiresAt,
+		&result,
+		&errorMessage,
 	)
 
 	if err != nil {
@@ -77,8 +90,34 @@ func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
 	if leaseExpiresAt.Valid {
 		job.LeaseExpiresAt = leaseExpiresAt.Time.Format(time.RFC3339Nano)
 	}
+	if result.Valid {
+		job.Result = json.RawMessage(result.String)
+	}
+	if errorMessage.Valid {
+		job.ErrorMessage = errorMessage.String
+	}
 
 	return job, nil
+}
+
+func (s *JobStore) ListByUID(uid string) ([]model.Job, error) {
+	rows, err := s.db.Query(
+		`SELECT id, title, status, ctx, lease_token, lease_expires_at, result, error_message
+		 FROM jobs WHERE ctx->>'uid' = $1 ORDER BY id DESC LIMIT 100`, uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	jobs := make([]model.Job, 0)
+	for rows.Next() {
+		job, err := scanJob(rows)
+		if err != nil {
+			return nil, err
+		}
+		jobs = append(jobs, job)
+	}
+	return jobs, rows.Err()
 }
 
 func (s *JobStore) AddOrderID(id int64, uid, orderID string) (model.Job, error) {
@@ -181,6 +220,27 @@ func (s *JobStore) UpdateStatus(
 		)
 	}
 
+	return nil
+}
+
+func (s *JobStore) Finish(id int64, token string, status model.JobStatus, result []byte, errorMessage string) error {
+	updated, err := s.db.Exec(
+		`UPDATE jobs
+		 SET status = $1, result = NULLIF($2::text, '')::jsonb, error_message = NULLIF($3::text, '')
+		 WHERE id = $4 AND status = 'running'
+		   AND lease_token = $5 AND lease_expires_at > NOW()`,
+		status, string(result), errorMessage, id, token,
+	)
+	if err != nil {
+		return err
+	}
+	affected, err := updated.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return fmt.Errorf("job %d finish rejected: status, lease, or token no longer matches", id)
+	}
 	return nil
 }
 

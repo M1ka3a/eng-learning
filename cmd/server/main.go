@@ -46,6 +46,7 @@ func main() {
 	http.HandleFunc("POST /categories", categoryHandler.Create)
 
 	http.HandleFunc("POST /jobs", jobHandler.Create)
+	http.HandleFunc("GET /jobs", jobHandler.ListByUID)
 	http.HandleFunc("GET /jobs/{id}", jobHandler.GetJobByID)
 	http.HandleFunc("PATCH /jobs/{id}/input", jobHandler.SubmitOrderID)
 
