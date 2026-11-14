@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-Build a real Job Executor that replaces the Sleep placeholder and can evolve toward AI Engineering. Current work is at the use-case and contract design stage; the job type and result contract are not yet selected.
+Primary learning goal: translate business requirements into a small, testable software design, using text-only customer support ticket triage as the case. A partial create/supplement workflow now exists; the actual triage execution and result contract are still missing. Processing remains in Biz for the first version.
 
 ## Evidence-backed progress
 
@@ -19,12 +19,18 @@ Build a real Job Executor that replaces the Sleep placeholder and can evolve tow
 - Lease test code: PostgreSQL integration scenarios use an isolated random schema and now require database name `backend_lab_test`; a concurrent claim scenario and database row assertions are included.
 - DAL unit tests use a fake `database/sql` driver to inspect SQL predicates and affected-row handling without PostgreSQL.
 - Learner has practiced the job state machine, worker pool, lease, and basic failure-recovery design. This records practice, not full mastery.
+- Learner independently distinguished accepting an incomplete ticket from making it eligible for worker claiming; this is evidence of reasoning about input completeness and execution readiness.
+- Learner identified requirements-to-design translation as a current skill gap and chose to practice it explicitly before implementation.
+- Ticket progress: `TicketDetails` (UID, order ID, description); create selects `needs_input` or `pending`; `PATCH /jobs/{id}/input` calls Biz `AddOrderID`, which compares the stored UID and updates the order ID through a conditional DAL update that also moves the job to `pending`.
+- Learner independently noticed that clients need a way to recover job IDs and that `TicketInput` was misleading for data read from stored `ctx`.
 
 ### Important limits
 
-- `internal/worker/worker.go` still uses a roughly five-second `Sleep` placeholder; implementing a real executor is now the next priority.
+- `internal/worker/worker.go` still uses a roughly five-second `Sleep` placeholder; implementing the text-ticket executor is now the next priority.
+- No triage result schema, classification rules, persisted result, or user-facing result retrieval exists yet. `Create` does not validate UID/description as required by the proposed contract; matching a request UID is not authentication.
+- The ticket create/supplement code compiled with `go build ./...` after the latest changes. No tests or database behavior for this workflow have been run; the `jsonb_set` update assumes `jobs.ctx` is `jsonb`.
 - Lease integration tests have not been run against PostgreSQL. The database environment was unavailable/inconsistent, and per the learner's boundary no service or database changes were made.
-- `go test ./...` passed with `LEASE_TEST_DATABASE_URL` explicitly unset; this checked compilation and non-database tests only. PostgreSQL SQL/locking/time semantics remain unverified.
+- Earlier `go test ./...` passed with `LEASE_TEST_DATABASE_URL` explicitly unset; this predates the ticket changes and checked compilation and non-database tests only. PostgreSQL SQL/locking/time semantics remain unverified.
 - Lease renewal exists in the DAL but is not wired into the worker execution loop. Retry, idempotency, and timeout remain on the roadmap and are deferred until a real job creates a concrete need. Graceful shutdown, fault injection, and production readiness remain incomplete.
 - Prior code and logs do not establish the learner's mastery of Go syntax, Context, concurrency, or database semantics.
 
@@ -32,11 +38,11 @@ Build a real Job Executor that replaces the Sleep placeholder and can evolve tow
 
 - Go syntax and control flow in the existing layers.
 - Context cancellation and its limits when work is blocking; goroutine lifecycle and graceful shutdown.
-- PostgreSQL transaction boundaries, row locks, and `SKIP LOCKED`; lease correctness has test code but no live database evidence yet.
 - Translating a real business use case into a clear job input/output contract and execution lifecycle.
+- Translating business statements into concrete scenarios, acceptance criteria, data contracts, state transitions, and layer responsibilities before coding.
 - Go execution design, Context cancellation, and the boundary between Worker orchestration and business execution.
 - PostgreSQL transaction boundaries, row locks, and `SKIP LOCKED`; Lease database behavior remains unverified.
 
 ## Next session
 
-**Suggested topic:** Design and implement the first real Job Executor. First select a useful deterministic job that can later gain an AI step; define its versioned input, output, errors, and execution flow. Review whether the current Handler/Biz/DAL/Worker boundaries fit before making changes. Keep the Lease PostgreSQL integration test as an explicit unverified item, and revisit retry/idempotency/timeout only when required by the selected job.
+**Next session:** Review and finalize a small set of ticket acceptance examples and the `TriageResult` contract, then implement one complete input → Biz classification → persisted result → GET path. Review the partial create/supplement code against the contract before adding more behavior. Do not treat `go build` as database verification; Lease PostgreSQL behavior also remains unverified. Retry/idempotency/timeout stay deferred until needed by real execution.

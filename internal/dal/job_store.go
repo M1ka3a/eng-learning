@@ -19,7 +19,7 @@ func NewJobStore(db *sql.DB) *JobStore {
 	return &JobStore{db: db}
 }
 
-func (s *JobStore) Create(title string, ctx json.RawMessage) (model.Job, error) {
+func (s *JobStore) Create(title string, status model.JobStatus, ctx json.RawMessage) (model.Job, error) {
 	title = strings.TrimSpace(title)
 	if title == "" {
 		return model.Job{}, model.ErrJobTitleInvalid
@@ -37,10 +37,10 @@ func (s *JobStore) Create(title string, ctx json.RawMessage) (model.Job, error) 
 	job := model.Job{}
 
 	err := s.db.QueryRow(
-		`INSERT INTO jobs (title, ctx)
-		 VALUES ($1, $2)
+		`INSERT INTO jobs (title, ctx, status)
+		 VALUES ($1, $2, $3)
 		 RETURNING id, title,status, ctx`,
-		title, ctxJSON,
+		title, ctxJSON, status,
 	).Scan(&job.ID, &job.Title, &job.Status, &job.Ctx)
 	if err != nil {
 		return model.Job{}, err
@@ -51,6 +51,8 @@ func (s *JobStore) Create(title string, ctx json.RawMessage) (model.Job, error) 
 
 func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
 	var job model.Job
+	var leaseToken sql.NullString
+	var leaseExpiresAt sql.NullTime
 
 	err := s.db.QueryRow(
 		`SELECT id, title, status, ctx, lease_token, lease_expires_at
@@ -62,14 +64,39 @@ func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
 		&job.Title,
 		&job.Status,
 		&job.Ctx,
-		&job.LeaseToken,
-		&job.LeaseExpiresAt,
+		&leaseToken,
+		&leaseExpiresAt,
 	)
 
 	if err != nil {
 		return model.Job{}, err
 	}
+	if leaseToken.Valid {
+		job.LeaseToken = leaseToken.String
+	}
+	if leaseExpiresAt.Valid {
+		job.LeaseExpiresAt = leaseExpiresAt.Time.Format(time.RFC3339Nano)
+	}
 
+	return job, nil
+}
+
+func (s *JobStore) AddOrderID(id int64, uid, orderID string) (model.Job, error) {
+	var job model.Job
+	err := s.db.QueryRow(
+		`UPDATE jobs
+		 SET ctx = jsonb_set(ctx, '{order_id}', to_jsonb($3::text), true),
+		     status = 'pending'
+		 WHERE id = $1 AND status = 'needs_input' AND ctx->>'uid' = $2
+		 RETURNING id, title, status, ctx`,
+		id, uid, orderID,
+	).Scan(&job.ID, &job.Title, &job.Status, &job.Ctx)
+	if err == sql.ErrNoRows {
+		return model.Job{}, model.ErrJobNotEditable
+	}
+	if err != nil {
+		return model.Job{}, err
+	}
 	return job, nil
 }
 

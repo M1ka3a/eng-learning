@@ -24,6 +24,11 @@ type CreateJobRequest struct {
 	Ctx   json.RawMessage `json:"ctx"`
 }
 
+type SubmitOrderIDRequest struct {
+	UID     string `json:"uid"`
+	OrderID string `json:"order_id"`
+}
+
 // POST /jobs
 func (h *JobHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var request CreateJobRequest
@@ -48,6 +53,46 @@ func (h *JobHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
+
+	if err := json.NewEncoder(w).Encode(job); err != nil {
+		log.Printf("Encode response failed: %v", err)
+	}
+}
+
+// PATCH /jobs/{id}/input
+func (h *JobHandler) SubmitOrderID(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		http.Error(w, "invalid job ID", http.StatusBadRequest)
+		return
+	}
+
+	var request SubmitOrderIDRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	job, err := h.jobBiz.AddOrderID(id, request.UID, request.OrderID)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			http.Error(w, "job not found", http.StatusNotFound)
+		case errors.Is(err, model.ErrJobUIDInvalid), errors.Is(err, model.ErrJobOrderInvalid):
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		case errors.Is(err, model.ErrJobUIDMismatch):
+			http.Error(w, err.Error(), http.StatusForbidden)
+		case errors.Is(err, model.ErrJobNotEditable):
+			http.Error(w, err.Error(), http.StatusConflict)
+		default:
+			log.Printf("Update job failed: %v", err)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(job); err != nil {
 		log.Printf("Encode response failed: %v", err)

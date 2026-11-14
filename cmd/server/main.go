@@ -47,6 +47,7 @@ func main() {
 
 	http.HandleFunc("POST /jobs", jobHandler.Create)
 	http.HandleFunc("GET /jobs/{id}", jobHandler.GetJobByID)
+	http.HandleFunc("PATCH /jobs/{id}/input", jobHandler.SubmitOrderID)
 
 	// 5. 初始化并启动 Worker
 	worker := worker.NewWorker(jobBiz)

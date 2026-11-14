@@ -14,8 +14,9 @@ type Job struct {
 type JobStatus string
 
 const (
-	JobPending   JobStatus = "pending"
-	JobRunning   JobStatus = "running"
-	JobSucceeded JobStatus = "succeeded"
-	JobFailed    JobStatus = "failed"
+	JobPending    JobStatus = "pending"
+	JobRunning    JobStatus = "running"
+	JobSucceeded  JobStatus = "succeeded"
+	JobFailed     JobStatus = "failed"
+	JobNeedsInput JobStatus = "needs_input"
 )
