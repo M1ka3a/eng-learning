@@ -1,6 +1,7 @@
 package dal
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"backend-lab-go/internal/model"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -119,7 +121,7 @@ func TestLeaseClaimRenewTakeoverAndFinish(t *testing.T) {
 	if err := store.UpdateStatus(workerA.ID, model.JobRunning, model.JobSucceeded, workerA.LeaseToken); err == nil {
 		t.Fatal("expired worker finished after takeover")
 	}
-	current, err := store.GetJobByID(workerB.ID)
+	current, err := store.GetJobByID(context.Background(), workerB.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +131,7 @@ func TestLeaseClaimRenewTakeoverAndFinish(t *testing.T) {
 	if err := store.UpdateStatus(workerB.ID, model.JobRunning, model.JobSucceeded, workerB.LeaseToken); err != nil {
 		t.Fatalf("current lease owner could not finish: %v", err)
 	}
-	current, err = store.GetJobByID(workerB.ID)
+	current, err = store.GetJobByID(context.Background(), workerB.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -209,7 +211,7 @@ func TestConcurrentClaimNextDoesNotDuplicateLease(t *testing.T) {
 		t.Fatalf("unexpected claimed job: %+v", claimed[0])
 	}
 
-	stored, err := store.GetJobByID(created.ID)
+	stored, err := store.GetJobByID(context.Background(), created.ID)
 	if err != nil {
 		t.Fatal(err)
 	}

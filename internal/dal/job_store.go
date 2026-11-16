@@ -2,6 +2,7 @@ package dal
 
 import (
 	"backend-lab-go/internal/model"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -53,8 +54,8 @@ func (s *JobStore) CreateWithStatus(title string, status model.JobStatus, ctx js
 	return job, nil
 }
 
-func (s *JobStore) GetJobByID(id int64) (model.Job, error) {
-	return scanJob(s.db.QueryRow(
+func (s *JobStore) GetJobByID(ctx context.Context, id int64) (model.Job, error) {
+	return scanJob(s.db.QueryRowContext(ctx,
 		`SELECT id, title, status, ctx, lease_token, lease_expires_at, result, error_message
          FROM jobs
          WHERE id = $1`,
@@ -120,9 +121,9 @@ func (s *JobStore) ListByUID(uid string) ([]model.Job, error) {
 	return jobs, rows.Err()
 }
 
-func (s *JobStore) AddOrderID(id int64, uid, orderID string) (model.Job, error) {
+func (s *JobStore) AddOrderID(ctx context.Context, id int64, uid, orderID string) (model.Job, error) {
 	var job model.Job
-	err := s.db.QueryRow(
+	err := s.db.QueryRowContext(ctx,
 		`UPDATE jobs
 		 SET ctx = jsonb_set(ctx, '{order_id}', to_jsonb($3::text), true),
 		     status = 'pending'

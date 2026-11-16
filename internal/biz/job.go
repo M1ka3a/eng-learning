@@ -3,9 +3,15 @@ package biz
 import (
 	"backend-lab-go/internal/dal"
 	"backend-lab-go/internal/model"
+	"context"
 	"encoding/json"
 	"strings"
+	"time"
 )
+
+// claimLeaseDuration is how long a worker owns a claimed job before another
+// worker may take it over.
+const claimLeaseDuration = 60 * time.Second
 
 type JobBiz struct {
 	jobStore *dal.JobStore
@@ -78,8 +84,8 @@ func validTicketCategory(category model.TicketCategory) bool {
 	}
 }
 
-func (a *JobBiz) GetJobByID(id int64) (model.Job, error) {
-	return a.jobStore.GetJobByID(id)
+func (a *JobBiz) GetJobByID(ctx context.Context, id int64) (model.Job, error) {
+	return a.jobStore.GetJobByID(ctx, id)
 }
 
 func (a *JobBiz) ListByUID(uid string) ([]model.Job, error) {
@@ -91,7 +97,7 @@ func (a *JobBiz) ListByUID(uid string) ([]model.Job, error) {
 }
 
 func (a *JobBiz) ClaimNext() (model.Job, error) {
-	return a.jobStore.ClaimNext(60)
+	return a.jobStore.ClaimNext(claimLeaseDuration)
 }
 
 func (a *JobBiz) Finish(id int64, token string, result model.RoutingResult, runErr error) error {
@@ -113,7 +119,7 @@ func (a *JobBiz) Finish(id int64, token string, result model.RoutingResult, runE
 	return a.jobStore.Finish(id, token, targetStatus, resultJSON, errorMessage)
 }
 
-func (a *JobBiz) AddOrderID(id int64, uid, orderID string) (model.Job, error) {
+func (a *JobBiz) AddOrderID(ctx context.Context, id int64, uid, orderID string) (model.Job, error) {
 	uid = strings.TrimSpace(uid)
 	orderID = strings.TrimSpace(orderID)
 	if uid == "" {
@@ -123,7 +129,7 @@ func (a *JobBiz) AddOrderID(id int64, uid, orderID string) (model.Job, error) {
 		return model.Job{}, model.ErrJobOrderInvalid
 	}
 
-	job, err := a.jobStore.GetJobByID(id)
+	job, err := a.jobStore.GetJobByID(ctx, id)
 	if err != nil {
 		return model.Job{}, err
 	}
@@ -138,5 +144,5 @@ func (a *JobBiz) AddOrderID(id int64, uid, orderID string) (model.Job, error) {
 		return model.Job{}, model.ErrJobNotEditable
 	}
 
-	return a.jobStore.AddOrderID(id, uid, orderID)
+	return a.jobStore.AddOrderID(ctx, id, uid, orderID)
 }

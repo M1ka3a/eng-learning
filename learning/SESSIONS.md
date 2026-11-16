@@ -55,3 +55,20 @@ Append one concise entry after each session. Record evidence, not assumptions.
 - **Decision/Implemented:** coach revised the example to require a customer-selected category at creation and to produce a routing result marked `user_selected`. Phrase matching was removed. Existing Job execution and result persistence remain in place for now.
 - **Verified:** non-database `go build ./...` and `git diff --check` passed. No tests, service run, migration, or PostgreSQL call.
 - **Open:** human review/editing is not implemented; the simple routing mapping may not justify an asynchronous Job Executor. Actual database behavior and authentication are unverified.
+
+## 2026-11-16 — Code review and lease-duration bug fix checkpoint
+
+- **Encountered:** read-only review of layering, error handling, context propagation, resource management, SQL/migrations, and go.mod. Main findings: `ClaimNext(60)` was 60ns; no `context.Context` passed below handlers; `main.go` starts 4 workers, only one of them cancellable, with no graceful shutdown or server timeouts; handlers depend on `sql.ErrNoRows`; category handler returns wrong status codes; claim/UID queries have no indexes; base `jobs`/`categories` schema missing from migrations; `go mod tidy` needed (direct deps marked indirect).
+- **Implemented:** learner directed a test-first fix. Coach wrote `internal/biz/job_integration_test.go`, then changed Biz to use `claimLeaseDuration = 60 * time.Second`.
+- **Verified:** before the fix, the test failed at `Finish: job 1 finish rejected: status, lease, or token no longer matches`. After the fix, `go test ./... -count=1` against `backend_lab_test` passed, including the DAL Lease integration tests on real PostgreSQL for the first time. Test schemas were dropped afterward. Changes are not committed.
+- **Understood/Transferable:** learner chose the reproduce-then-fix order and gated each step. Their explanation of why DAL tests missed the bug, and of the remaining review items, has not been assessed.
+- **Open:** prioritized next fixes: worker lifecycle/graceful shutdown in `main.go`, context propagation plus domain errors with `%w` wrapping, then indexes and base-schema migration.
+
+## 2026-11-16 — Go context session end
+
+- **Topic:** first exposure to `context.Context`: cancellation, deadlines, propagation, signals, and its relationship to leases.
+- **Implemented:** learner, with step-by-step coaching, propagated ctx from `r.Context()` to `QueryRowContext` for `GetJobByID` and `AddOrderID`, going one layer further than instructed; fixed compile/vet errors layer by layer, including test call sites. The coach completed the experiment test at the learner's request after they got stuck on `t.Logf`, the ignored `Scan` error, and the test name.
+- **Verified:** build/vet/full tests pass against `backend_lab_test`. Observed: deadline ctx cancels `pg_sleep(2)` at ~201ms (`errors.Is` sees `DeadlineExceeded` through pgx's wrapper), and no-ctx query runs 2s. Signal demo: unhandled SIGTERM gives exit 143 with no cleanup; `signal.NotifyContext` gives a clean exit 0. A first SIGINT attempt was invalid because background processes in non-interactive shells ignore SIGINT; this was replaced with SIGTERM.
+- **Understood:** partial. The learner's question "what is context for?" led to the purpose table (caller gone, timeout, shutdown). Learner generalized "usually finish current work", which the coach refined to a result-still-needed rule. They did not independently answer the Ctrl+C, lease-takeover, or `Finish` ctx questions; the answers were given. They expressed early linkage of context and transactions; the distinction is unchecked.
+- **Transferable:** not demonstrated.
+- **Open:** learner's own explanation of the cancellation model; graceful shutdown implementation; ctx for the remaining DAL methods and the Worker; at-least-once/idempotency implications of lease takeover.

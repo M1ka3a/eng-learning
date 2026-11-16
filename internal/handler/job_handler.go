@@ -95,7 +95,7 @@ func (h *JobHandler) SubmitOrderID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	job, err := h.jobBiz.AddOrderID(id, request.UID, request.OrderID)
+	job, err := h.jobBiz.AddOrderID(r.Context(), id, request.UID, request.OrderID)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -123,14 +123,14 @@ func (h *JobHandler) SubmitOrderID(w http.ResponseWriter, r *http.Request) {
 // GET /jobs/{id}
 func (h *JobHandler) GetJobByID(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
-
+	ctx := r.Context()
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil || id <= 0 {
 		http.Error(w, "invalid job ID", http.StatusBadRequest)
 		return
 	}
 
-	job, err := h.jobBiz.GetJobByID(id)
+	job, err := h.jobBiz.GetJobByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.Error(w, "job not found", http.StatusNotFound)
