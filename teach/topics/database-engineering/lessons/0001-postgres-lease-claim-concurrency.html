@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Job Lease：MVCC、行锁与任务领取 | Job Lease: MVCC, Row Locks, and Claims</title>
+  <link rel="stylesheet" href="../../../assets/lesson.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">Database Engineering · 0001 · 中英对照 / Bilingual</p>
+  <h1>为什么两个 Worker 不会领取同一个 Job？</h1>
+  <p class="dek">Why don't two workers claim the same job?</p>
+
+  <section>
+    <h2>本节目标 / Goal</h2>
+    <div class="bilingual">
+      <p lang="zh">结合现有 PostgreSQL Job Lease，区分 MVCC 快照、行锁、SKIP LOCKED 和 Lease 所有权检查分别解决什么问题。我们不从基础 SQL 讲起；重点是解释并发保证及其边界。</p>
+      <p lang="en">Using the existing PostgreSQL Job Lease, distinguish the roles of an MVCC snapshot, a row lock, SKIP LOCKED, and the Lease ownership check. We will not start with basic SQL; the focus is on explaining the concurrency guarantees and their limits.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>先看真实查询 / Start with the project query</h2>
+    <pre><code>WITH candidate AS (
+  SELECT id
+  FROM jobs
+  WHERE status = 'pending'
+     OR (status = 'running' AND lease_expires_at &lt;= NOW())
+  ORDER BY id
+  FOR UPDATE SKIP LOCKED
+  LIMIT 1
+)
+UPDATE jobs AS j
+SET status = 'running',
+    lease_token = $1,
+    lease_expires_at = NOW() + ($2 * INTERVAL '1 second')
+FROM candidate
+WHERE j.id = candidate.id
+RETURNING ...</code></pre>
+    <div class="bilingual">
+      <p lang="zh">候选行的选择与更新在一条 SQL 语句里完成。这里没有显式的 Begin/Commit；在当前调用方式下，PostgreSQL 会在该语句的隐式事务中执行它。选中并锁定候选行、写入新状态和 token，要么一起提交，要么一起回滚。</p>
+      <p lang="en">Candidate selection and the update happen in one SQL statement. There is no explicit Begin/Commit here; with this call pattern, PostgreSQL executes the statement in an implicit transaction. Selecting and locking the candidate, then writing the new status and token, commit or roll back together.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>四个机制，各司其职 / Four mechanisms, four responsibilities</h2>
+    <ol class="sequence">
+      <li><div><strong>MVCC snapshot / MVCC 快照</strong><div class="bilingual"><p lang="zh">MVCC 决定一条语句能看到哪些已提交的数据版本。PostgreSQL 默认的 Read Committed 隔离级别通常为每条语句建立快照；它不代表“完全没有锁”。</p><p lang="en">MVCC determines which committed row versions a statement can see. PostgreSQL's default Read Committed isolation generally takes a snapshot per statement; it does not mean that the database uses no locks.</p></div></div></li>
+      <li><div><strong>FOR UPDATE row lock / FOR UPDATE 行锁</strong><div class="bilingual"><p lang="zh">它锁住被选中的 Job 行，使冲突的领取或更新不能同时修改该行。锁在当前语句的事务结束时释放；本项目的 Worker 处理发生在领取语句之后，不持有这把行锁。普通 <code>SELECT</code> 不拿这种行锁，但会拿表级 <code>ACCESS SHARE</code> 锁；它通常不会阻塞行更新。</p><p lang="en">It locks the selected job row so a conflicting claim or update cannot modify that row at the same time. The lock is released when the statement's transaction ends; this project's worker processes the job after the claim statement and does not hold this row lock while doing so. A plain <code>SELECT</code> does not take this row lock, but it does take a table-level <code>ACCESS SHARE</code> lock, which normally does not block row updates.</p></div></div></li>
+      <li><div><strong>SKIP LOCKED / 跳过已锁行</strong><div class="bilingual"><p lang="zh">另一个领取者遇到已锁候选行时跳过它，而不是等待。队列消费者因此可以继续找其他任务；如果没有其他可领取行，本次可能返回无行。代价是查询结果不是完整、一般用途的一致视图。</p><p lang="en">When another claimant encounters a locked candidate, it skips the row instead of waiting. A queue consumer can continue looking for other work; if no other job is eligible, this call may return no row. The tradeoff is that the result is not a complete, general-purpose consistent view.</p></div></div></li>
+      <li><div><strong>Lease token and expiry / Lease token 与过期时间</strong><div class="bilingual"><p lang="zh">领取语句提交后，数据库行锁已结束，但 Worker 仍需要在一段时间内拥有处理权。后续续租/完成 SQL 通过 running 状态、当前 token 和未过期条件检查所有权。token 条件使接管后的旧 Worker 不能覆盖数据库中的新状态。</p><p lang="en">After the claim statement commits, the database row lock is gone, but the worker still needs time-limited processing ownership. Later renewal/completion SQL checks the running status, current token, and unexpired lease. The token condition prevents an old worker from overwriting database state after a takeover.</p></div></div></li>
+    </ol>
+  </section>
+
+  <div class="callout">
+    <strong>关键边界 / Important boundary</strong>
+    <div class="bilingual"><p lang="zh">这些机制不等于 exactly-once。假如 Worker 在 Lease 过期前已调用外部支付接口，但在写回完成状态前崩溃，新 Worker 可能重试该副作用。数据库拒绝旧 token 的 Finish，并不能撤销已经发生的外部操作。</p><p lang="en">These mechanisms do not provide exactly-once execution. If a worker calls an external payment API before its Lease expires but crashes before recording completion, a new worker may retry that side effect. Rejecting the old token's Finish in the database cannot undo an external operation that already happened.</p></div>
+  </div>
+
+  <section>
+    <h2>Quiz：先解释，再做 Lab / Quiz: explain before the Lab</h2>
+    <p>请在对话中回答；回答后老师会逐题反馈，再确定 Project Lab 的范围。Please answer in the conversation. The teacher will give feedback before defining the Project Lab.</p>
+    <div class="question">
+      <ol>
+        <li><strong>Concept / 概念：</strong>MVCC 已经让读写并发访问成为可能，为什么领取查询仍需要 <code>FOR UPDATE</code>？普通 <code>SELECT</code> 与 <code>SELECT ... FOR UPDATE</code> 的作用有什么不同？<br><span lang="en">If MVCC supports concurrent reads and writes, why does the claim query still need <code>FOR UPDATE</code>? What differs between a plain <code>SELECT</code> and <code>SELECT ... FOR UPDATE</code>?</span></li>
+        <li><strong>Scenario / 场景推理：</strong>只有一个 pending Job。A 已锁住候选行时，B 同时执行带 <code>SKIP LOCKED</code> 的领取查询。B 会等待、领取同一个 Job，还是可能拿到零行？请按时间线解释。<br><span lang="en">There is one pending job. While A holds the candidate row lock, B runs the claim query with <code>SKIP LOCKED</code>. Does B wait, claim the same job, or possibly get no row? Explain the timeline.</span></li>
+        <li><strong>Decision / 技术判断：</strong>Lease 过期后 B 已经接管，A 的 <code>Finish</code> 会被什么条件拒绝？这些检查能保证外部副作用只执行一次吗？如果不能，说明一个还需要解决的风险。<br><span lang="en">After B takes over an expired Lease, which conditions reject A's <code>Finish</code>? Do these checks guarantee that an external side effect runs only once? If not, name one remaining risk.</span></li>
+      </ol>
+      <p>无需背诵术语。重点是把每项保证对应到具体机制，并说明边界。No need to recite terminology. Connect each guarantee to its mechanism and explain the limits.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>可信资料 / Primary sources</h2>
+    <ul>
+      <li><a href="https://www.postgresql.org/docs/current/mvcc-intro.html">PostgreSQL: Introduction to MVCC</a> — version visibility / 数据版本可见性。</li>
+      <li><a href="https://www.postgresql.org/docs/current/transaction-iso.html">PostgreSQL: Transaction Isolation</a> — Read Committed snapshots and concurrent updates / Read Committed 快照与并发更新。</li>
+      <li><a href="https://www.postgresql.org/docs/current/explicit-locking.html">PostgreSQL: Explicit Locking</a> — row-lock behavior and lock lifetime / 行锁行为与生命周期。</li>
+      <li><a href="https://www.postgresql.org/docs/current/sql-select.html">PostgreSQL: SELECT locking clause</a> — <code>FOR UPDATE</code> and <code>SKIP LOCKED</code>.</li>
+    </ul>
+  </section>
+
+  <nav><a href="../../../TOPICS.md">All topics / 全部专题</a> · <a href="../TOPIC.md">Database Engineering</a> · <a href="../reference/postgres-claim-concurrency.html">Quick reference / 速查</a></nav>
+  <footer>本课重点：解释快照可见性、领取竞争与 Lease 所有权各自的边界。<br>Focus: explain the separate boundaries of snapshot visibility, claim arbitration, and Lease ownership.</footer>
+</main>
+</body>
+</html>

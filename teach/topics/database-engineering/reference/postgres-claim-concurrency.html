@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PostgreSQL queue claim: snapshot, lock, lease</title>
+  <link rel="stylesheet" href="../../../assets/lesson.css">
+</head>
+<body>
+<main>
+  <p class="eyebrow">Database Engineering · Quick reference</p>
+  <h1>Snapshot, row lock, lease token</h1>
+  <p class="dek">Three different mechanisms cooperate in the Job Lease claim flow. They solve different parts of the race.</p>
+  <h2>What each mechanism contributes</h2>
+  <ul>
+    <li><strong>MVCC snapshot:</strong> a statement sees a committed database view; under PostgreSQL Read Committed, the snapshot is taken at statement start.</li>
+    <li><strong><code>FOR UPDATE</code>:</strong> locks the chosen row against competing updates/claimers until the statement transaction ends.</li>
+    <li><strong><code>SKIP LOCKED</code>:</strong> a competing queue consumer skips a row locked by another transaction instead of waiting; the resulting view is intentionally incomplete.</li>
+    <li><strong>Lease token predicate:</strong> later renewal/completion statements require the current token, running status, and an unexpired deadline. This rejects a stale worker after takeover.</li>
+  </ul>
+  <h2>Job Lease timeline</h2>
+  <ol>
+    <li>Claim statement finds a pending/expired row in its snapshot and locks the candidate.</li>
+    <li>In the same statement, <code>UPDATE</code> writes <code>running</code>, a fresh token, and the expiry.</li>
+    <li>The statement's implicit transaction commits; the row lock is released. The worker does its processing outside that database transaction.</li>
+    <li>If the lease expires, a later claimant can replace the token. The old worker's finish predicate no longer matches.</li>
+  </ol>
+  <div class="callout"><strong>Do not conflate them:</strong> MVCC is the visibility model; the row lock arbitrates this claim race; the token and expiry are the application's ownership/fencing check. Read Committed alone does not make a multi-statement read-then-write sequence safe.</div>
+  <p>Sources: <a href="https://www.postgresql.org/docs/current/mvcc-intro.html">MVCC introduction</a>, <a href="https://www.postgresql.org/docs/current/transaction-iso.html">transaction isolation</a>, <a href="https://www.postgresql.org/docs/current/explicit-locking.html">explicit locking</a>, and <a href="https://www.postgresql.org/docs/current/sql-select.html">SELECT / locking clause</a>.</p>
+</main>
+</body>
+</html>

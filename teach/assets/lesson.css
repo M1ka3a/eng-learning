@@ -1,0 +1,40 @@
+:root {
+  color-scheme: light;
+  --ink: #17212b;
+  --muted: #526170;
+  --paper: #fbfaf7;
+  --line: #d8d6cf;
+  --accent: #166b66;
+  --soft: #e8f2ef;
+  --warm: #f3eee1;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.65 Georgia, "Iowan Old Style", serif;
+}
+main { max-width: 780px; margin: 0 auto; padding: 56px 28px 80px; }
+.eyebrow, h1, h2, h3, .callout, nav, figcaption { font-family: system-ui, sans-serif; }
+.eyebrow { color: var(--accent); font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+h1 { max-width: 680px; margin: 12px 0; font-size: clamp(2.2rem, 7vw, 4rem); line-height: 1.08; letter-spacing: -.045em; }
+.dek { max-width: 650px; color: var(--muted); font-size: 1.2rem; }
+h2 { margin-top: 2.6rem; font-size: 1.55rem; letter-spacing: -.025em; }
+h3 { margin-top: 1.7rem; font-size: 1.08rem; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; }
+pre { overflow-x: auto; padding: 18px; border: 1px solid var(--line); background: #f2f1ec; line-height: 1.55; }
+a { color: #075e59; text-underline-offset: 3px; }
+.callout { margin: 24px 0; padding: 18px 20px; border-left: 4px solid var(--accent); background: var(--soft); font-size: .96rem; }
+.sequence { padding: 0; list-style: none; counter-reset: step; }
+.sequence li { counter-increment: step; display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; margin: 12px 0; }
+.sequence li::before { content: counter(step); display: grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--warm); font: 700 .85rem system-ui, sans-serif; }
+.question { padding: 20px 22px; border: 1px solid var(--line); background: #fff; }
+.bilingual { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; }
+.bilingual p { margin: 8px 0; }
+.bilingual p[lang="en"] { color: var(--muted); }
+li > div > .bilingual { margin-top: 6px; }
+nav, footer { margin-top: 3rem; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+@media (max-width: 620px) { .bilingual { grid-template-columns: 1fr; gap: 0; } }
+@media print { body { background: white; } main { max-width: none; padding: 0; } a { color: inherit; } .bilingual { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
