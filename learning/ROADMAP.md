@@ -1,10 +1,10 @@
-# Roadmap: project finish and interview prep
+# Roadmap: hands-on practice and interview prep
 
-The project is a portfolio piece: **a reliable PostgreSQL-backed job queue in Go, plus the test system that proves its guarantees.** Finish it, freeze it, and be able to defend it. Do not add product features unless an interview story needs them.
+This repo is a **hands-on practice ground**: a PostgreSQL-backed job queue in Go, used to practice real backend code and framework and system design. Pick items by learning value for the target roles (concurrency, scheduling, reliability, test architecture, service design), not for polish. Optional direction: evolve the job model toward a test-execution scheduler (run, attempt, retry, failure classification). That domain matches the platform design the learner prepared for Ola and the Test Infra target. Decide this when choosing the next practice item.
 
-## A. Project finish list
+## A. Practice items (candidate list; not a mandatory sequence)
 
-Each item counts only after the learner answers its "defend it" questions.
+An item counts as the learner's skill once they can explain and defend it.
 
 | # | Item | Acceptance | Defend-it focus |
 |---|---|---|---|

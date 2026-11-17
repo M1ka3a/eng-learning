@@ -3,3 +3,6 @@
 .env.*
 !.env.example
 .vscode/
+
+# Private job-search background (companies, referrals, leads)
+learning/BACKGROUND.md

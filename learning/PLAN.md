@@ -1,14 +1,29 @@
 # Plan: week of 2026-11-17 (applications open 11-19)
 
-Ranked by interview ROI. Re-rank after every real interview.
+Ranked by interview ROI; re-ranked 11-17 after reading BACKGROUND.md. Re-rank after every real interview. Do not carry stale items forward: drop or re-justify them.
+
+## Before 11-19 (gaps in resume claims and known real questions)
 
 | # | Todo | Type | Time | Why now | Done |
 |---|---|---|---|---|---|
-| 1 | Write and rehearse a 2-minute English project pitch plus the 60ns bug STAR story (K012, K013) | Mock | 1.5h total | Every interview opens with self-intro and project; needed before 11-19 | [ ] |
-| 2 | Put questions from the previous interview into `QUESTIONS.md` (`real:` tag) | Debrief | 30m | Real questions give the best ROI signal; the learner already has them | [ ] |
-| 3 | Algorithms: arrays/hashing, then two pointers and sliding window. 3–4 problems/day plus re-solves | Algorithm | 1.5h/day | High weight, current gap; benefits from daily repetition | [ ] |
-| 4 | Project finish step 1: `docker-compose` + README (architecture, guarantees, how to run) | Project | 2–3h | The repo link on the resume must be runnable and readable | [ ] |
-| 5 | Knowledge drill: SDET core (test design, framework layers, pyramid, flaky tests) and Python self-check | Drill | 1h/day | High weight; self-reported strength still needs checking against interview depth | [ ] |
-| 6 | Clear due reviews K001–K011 | Drill | 20m/day | Spaced repetition; misses from 11-16 and 11-17 | [ ] |
-| 7 | Project finish step 2: Python pytest API test suite against the service | Project | 1–2 days | Strongest SDET signal in the portfolio; shows Python and test design | [ ] |
-| 8 | Project finish step 3: GitHub Actions running Go tests (with PG) and pytest | Project | 0.5–1 day | Green CI badge, plus a CI/CD talking point | [ ] |
+| 1 | Tech-stack answer: which language is primary, what was built with each (K015) | Answer writing | 30m | Asked in a real interview (Ola); no answer prepared | [ ] |
+| 2 | "How can AI help QA" answer using AI-Assisted KYC as the example, with limits (K014) | Answer writing | 45m | Asked at Ola; expected at miHoYo | [ ] |
+| 3 | MCP / agent tooling story, covering only what the resume claims | Answer writing | 45m | On the resume, so it will be probed; nothing written | [ ] |
+| 4 | Unify numbers across the three ByteDance stories; resolve the (verify) items | Answer writing | 20m | Inconsistent numbers under follow-up hurt credibility | [ ] |
+| 5 | Employment-gap answer (restructuring + deliberate backend upskilling, with this repo as evidence) | Answer writing | 20m | The learner's main concern; asked early by HR | [ ] |
+| 6 | Voice mock deep-dive: three ByteDance stories + framework design (K016, K017) | Mock (Claude app, voice) | 1h | Material exists; spoken delivery is untested | [ ] |
+| ✓ | Put previous interview questions into `QUESTIONS.md` | Debrief | — | — | [x] 11-17: K014–K017 |
+
+## Ongoing (daily)
+
+| Todo | Time | Note |
+|---|---|---|
+| Algorithms, learner-run: arrays/hashing → two pointers → sliding window; log results in QUESTIONS | 1h/day | Two Sum logged △ (needed a hint for the hash approach); Group Anagrams next |
+| Due reviews in QUESTIONS (K001–K011) | 20m/day | Spaced repetition |
+
+## After applications start
+
+| Todo | Note |
+|---|---|
+| Repo practice: next item chosen by learning value (context + graceful shutdown is half-done; test-execution-scheduler direction is optional) | See ROADMAP A |
+| miHoYo payment-testing prep (idempotency, callbacks, reconciliation; bridge from at-least-once/lease) | Only when an interview is scheduled |

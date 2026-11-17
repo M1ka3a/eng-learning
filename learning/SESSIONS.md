@@ -87,3 +87,18 @@ Append one concise entry after each session. Record evidence, not assumptions.
 - **New target:** SDET/QA at mid-size or larger companies in Singapore, backend as a stretch. Applications start 11-19; 4h+/day; algorithms included; Python for algorithms and tests, Go for the service.
 - **Changes:** rewrote MISSION, AGENTS, teach-se SKILL (ROI-ranked start, six session types, teach-before-test), ROADMAP (project finish list + prep routes), and STATE (technical only). Added SKILLS, QUESTIONS, and PLAN. Removed learning-coach, UPSTREAM-NOTES, teach-se references, WORKFLOW.md, and empty topic dirs. Backup of the previous state: commit `b00ce9a`.
 - **Next:** PLAN items 1–3 (pitch and STAR story, add real interview questions, start algorithms).
+
+## 2026-11-17 — Background import from Lark and chat
+
+- **Why:** the learner wanted the coach to assess their state with their real background, not only this repo.
+- **Added:** `learning/BACKGROUND.md` (private, gitignored): career, January 2027 latest start, backend motivation, existing ByteDance project stories and platform-design prep in Lark, Ola Chat history, miHoYo lead.
+- **Records:** Ola questions added as K014–K017 (`real:ola`); PLAN item 2 ticked; SKILLS rows added/annotated for AI-assisted testing, project stories, tech-stack answer, framework design. No levels raised: all remain `?(self)` until checked in a mock.
+- **Next:** mock K014–K017 and one ByteDance project deep-dive to set real levels; write the tech-stack answer.
+
+## 2026-11-17 — Background intake and re-prioritization
+
+- The learner added `learning/BACKGROUND.md` (private, gitignored) from the Lark Job Search HQ: ByteDance/Garena history, three deep ByteDance project stories, the Ola real interview (K014–K017), and the miHoYo referral lead.
+- Decisions: the target is now Test Infra / DevProd / AI Quality first, backend as a stretch, QA only if it is mostly framework work. No offer in hand (the earlier one was declined). Start date by January 2027. The learner clarified that this repo is a hands-on practice ground for code and framework design, not a portfolio to polish. MISSION, AGENTS, ROADMAP, and SKILL were updated accordingly; an answer-writing session type was added.
+- PLAN re-ranked: before 11-19, write the tech-stack, AI-for-QA, MCP/agent, and employment-gap answers, unify story numbers, then run a voice mock. Algorithms are learner-run at 1h/day.
+- Algorithm: Two Sum △ (needed a hint for the hash approach; code skipped). The learner will run LeetCode practice independently.
+- Mock interview skipped today (no voice in the Code tab).

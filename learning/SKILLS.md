@@ -33,19 +33,24 @@ Weight is for the primary SDET/QA target (H/M/L); see `teach/MISSION.md`. Target
 | Skill | W | Now | Target | Evidence | Last | Next |
 |---|---|---|---|---|---|---|
 | Test case design (equivalence, boundary, state transition, pairwise) | H | ?(self) | 3 | — | — | Mock: "how would you test X" |
-| Automation framework design (layers, data, reporting) | H | ?(self) | 3 | — | — | — |
+| Automation framework design (layers, data, reporting) | H | ?(self) | 3 | Prepared platform-design answer for Ola Tech Lead final round (10-21), asked as K016/K017 | 11-17 | Mock K016 |
 | Test strategy and pyramid (unit/integration/E2E tradeoffs) | H | 2 | 3 | 2026-11-16: proposed reproducing the 60ns bug at the Biz layer first; existing DAL tests could not catch a caller unit bug | 11-16 | Explain in English as a project story |
 | CI/CD and test pipelines | H | ?(self) | 2 | — | — | Project: GitHub Actions |
 | Flaky tests: causes and handling | M | ? | 2 | — | — | — |
+| AI-assisted testing: where AI helps QA, limits, evaluating AI-generated tests | H | ?(self) | 3 | Asked at Ola (real, K014); learner-led AI-Assisted KYC MVP prepared in Lark (see BACKGROUND.md) | 11-17 | Mock K014 |
 | Concurrency / DB integration testing | M | 1 | 2 | Repo has isolated-schema PG tests (coach-authored) | 11-16 | Explain how the isolation works |
 
 ## Project (this repo)
 
 | Skill | W | Now | Target | Evidence | Last | Next |
 |---|---|---|---|---|---|---|
-| 2-minute English pitch | H | ? | 3 | — | — | Write and rehearse |
-| Defend architecture and every line | H | 1 | 3 | Many parts coach-authored; not yet explained by learner | — | Defend-it questions per finish item |
-| 60ns bug story (STAR) | H | 1 | 3 | Lived it on 11-16; not yet told | 11-16 | Mock interview |
+| ByteDance project stories (KYC UI automation, Moderation E2E, AI-Assisted KYC) | H | ?(self) | 3 | Written in depth in Lark with follow-ups and number boundaries (see BACKGROUND.md); some numbers inconsistent (verify) | 11-17 | Unify numbers; mock deep-dive |
+| Tech-stack answer (asked at Ola, K015) | H | 0 | 3 | No prepared answer found in Lark | 11-17 | Write and rehearse |
+| MCP / agent tooling story (on resume) | H | 0 | 3 | Claimed on resume; no story written | 11-17 | Write and rehearse |
+| Complex debugging story | M | 1 | 3 | Candidates: 60ns lease bug (this repo), Moderation failure attribution | 11-17 | Pick one and write STAR |
+| Employment-gap answer (since 2026-09) | H | ? | 3 | — | — | Write: restructuring + deliberate backend upskilling |
+| 60ns bug story (STAR) | M | 1 | 3 | Lived it on 11-16; not yet told | 11-16 | Mock interview |
+| Explain and defend this repo's design and code | M | 1 | 2 | Many parts coach-authored; not yet explained by learner | — | Defend-it questions after practice items |
 
 ## Database
 

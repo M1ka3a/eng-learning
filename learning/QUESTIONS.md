@@ -19,10 +19,15 @@ Results: `✗` miss · `△` partial · `✓` good. Next due: `✗` +1 day, `△
 | K011 | Go/testing | Why does `go build` miss errors in `_test.go` files, and what catches them? | — | — | 11-19 |
 | K012 | Project (EN) | Give a 2-minute pitch of this project. | — | — | 11-18 |
 | K013 | Behavioral (EN) | Tell me about a bug you found that others missed. (Use the 60ns story.) | — | — | 11-18 |
+| K014 | real:ola · AI for QA | How can AI help QA improve efficiency? | — | — | 11-18 |
+| K015 | real:ola · Career | What is your tech stack? (which language is primary, what you built with each) | — | — | 11-18 |
+| K016 | real:ola · Framework design | How would you design a test automation framework? | — | — | 11-18 |
+| K017 | real:ola · Frameworks | Introduce the automation frameworks you know. | — | — | 11-18 |
 
-<!-- Learner: add questions from your previous interview here, tagged real:<company>. -->
+<!-- Learner: add questions from future interviews here, tagged real:<company>. -->
 
 ## Algorithms (Python)
 
 | ID | Problem | Pattern | Last | Result | Time | Note | Due |
 |---|---|---|---|---|---|---|---|
+| A001 | LC 1 Two Sum | Arrays / hashing | 11-17 | △ | — | Proposed O(n²) complement scan; reached the dict (value→index, check before insert) after a hint; no code written | 11-20 |
