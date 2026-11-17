@@ -1,6 +1,6 @@
 # Software Implementation
 
-Knowledge map for building maintainable software with AI Agent support and accountable human review. Verified capability evidence lives in [learning/STATE.md](../../../learning/STATE.md).
+Knowledge map for building maintainable software with AI Agent support and accountable human review. Verified capability evidence lives in [learning/SKILLS.md](../../../learning/SKILLS.md).
 
 ## Knowledge map
 
@@ -25,4 +25,4 @@ No topic-local artifacts yet. Cross-topic lessons remain in one canonical folder
 
 ## Capabilities to verify
 
-Consult [learning/STATE.md](../../../learning/STATE.md). Check explanations of boundaries, errors, resource lifecycles, code review of Agent-generated diffs, and evidence-backed verification.
+Consult [learning/SKILLS.md](../../../learning/SKILLS.md). Check explanations of boundaries, errors, resource lifecycles, code review of Agent-generated diffs, and evidence-backed verification.

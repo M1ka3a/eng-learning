@@ -1,51 +1,60 @@
-# Engineering Learning Roadmap
+# Roadmap: project finish and interview prep
 
-## Long-term capability goals
+The project is a portfolio piece: **a reliable PostgreSQL-backed job queue in Go, plus the test system that proves its guarantees.** Finish it, freeze it, and be able to defend it. Do not add product features unless an interview story needs them.
 
-Build the ability to independently take a software idea from requirements through design, implementation, testing, deployment, operation, and iteration. Develop sound judgment about failure modes, tradeoffs, and technology choices, then apply those skills to AI-enabled systems.
+## A. Project finish list
 
-The learner brings substantial QA/SDET experience, Go/Python development, automation, and AI/MCP tool exposure. The development focus is independent backend delivery, system design, operations, and deeper understanding of concurrency and data semantics.
+Each item counts only after the learner answers its "defend it" questions.
 
-## Phases and acceptance criteria
+| # | Item | Acceptance | Defend-it focus |
+|---|---|---|---|
+| A1 | `docker-compose` (PG + service) and README | A fresh clone runs with one command; README has a diagram, guarantees (at-least-once, lease takeover), known limits, and how to test | Why a lease; what is and isn't guaranteed |
+| A2 | Python pytest API suite (`tests/api/`) | Covers create/get/list/supplement order ID, validation errors, 404/409/403, and job reaching `succeeded`; fixtures manage data; runs against compose | Test design choices; how async completion is waited on without flakiness |
+| A3 | GitHub Actions CI | Go unit tests, Go PG integration tests (service container), and pytest all green on push | Test pyramid; why each layer exists |
+| A4 | Context everywhere + graceful shutdown | ctx flows through all DAL/Biz calls; `signal.NotifyContext` (SIGINT+SIGTERM); one shared worker ctx (fix the extra 4th worker); `http.Server` with timeouts + `Shutdown`; `WaitGroup`; bounded `Finish` ctx | What happens on SIGTERM mid-job |
+| A5 | Fixes from the 11-16 review | Category handler status codes; DAL maps `sql.ErrNoRows` to domain errors; `%w` wrapping; `go mod tidy`; claim index; base schema migration | Error handling and indexing rationale |
+| A6 | (Optional) attempts / max retries | Poison job stops after N attempts | Retry vs idempotency |
 
-### 1. Build a real Job Executor with an AI Engineering path
+Suggested order: A1 → A2 → A3 → A4 → A5 → A6. A1–A3 make the project presentable; A4 also completes current Go learning.
 
-Topics: choose a meaningful job type; define its input/output contract and execution lifecycle; implement a real executor in place of the Sleep placeholder; decide how results and failures are represented; evolve from deterministic processing toward a bounded AI capability.
+## B. Algorithm route (Python, by pattern)
 
-Acceptance: defend the selected job use case and its contract; execute a real job end to end through the existing API and worker; persist or return a useful result; demonstrate success and failure behavior; explain the architecture and remaining limits.
+1. Arrays and hashing
+2. Two pointers
+3. Sliding window
+4. Stack
+5. Binary search
+6. Linked list
+7. Trees (DFS/BFS)
+8. Heap
+9. Intervals
+10. Graphs (BFS/DFS, topological sort)
+11. 1D dynamic programming
+12. Backtracking
 
-### 2. Reliable asynchronous execution and recovery
+For each pattern, do about 5–8 classic problems, then move on and interleave re-solves. Target: common Mediums in ~30 minutes.
 
-Topics: crash recovery, leases and lease expiry, retry policy, idempotency, timeout/cancellation, graceful shutdown, PostgreSQL transaction and locking semantics. Prioritize these when the real executor creates a concrete need; do not expand scheduler mechanics without clear learning value.
+## C. Knowledge route (ordered by SDET weight)
 
-Acceptance: explain the job state machine and failure windows; implement only the recovery behavior required by the workload; demonstrate key guarantees with PostgreSQL integration tests and targeted failure scenarios; explain what guarantees are and are not provided.
+1. Test design techniques; how to test a feature, an API, a system
+2. Automation framework design, pytest depth, CI/CD
+3. Python core
+4. HTTP and networking basics
+5. Database: transactions, isolation, locks, indexes
+6. Flaky tests, test data, environments, observability for testers
+7. Go and concurrency (for backend roles and project defense)
+8. Light system design
 
-### 3. Testing and production operation
+## D. Behavioral (English)
 
-Topics: unit versus integration tests, fault injection, configuration and secrets, deployment, migrations, logs/metrics/traces, health checks, operational runbooks.
+Prepare 5–6 STAR stories that can be adapted to common prompts:
+- conflict
+- failure
+- bug found
+- improved a process
+- learned fast
+- why move toward engineering
 
-Acceptance: reproduce key correctness claims in repeatable tests; deploy the service in a documented environment; diagnose a seeded failure from observable evidence; explain operational tradeoffs and remaining risks.
+## Later (after an offer)
 
-### 4. Distributed systems and system design
-
-Topics: delivery guarantees, consistency, contention, backpressure, scaling, coordination, data ownership, capacity and failure analysis.
-
-Acceptance: produce and defend a design for a stated workload; identify bottlenecks and failure modes; compare alternatives with explicit requirements and costs; revise the design when assumptions change.
-
-### 5. AI engineering foundations
-
-Topics: LLM APIs, structured output, tool calling, prompt and context design, safety boundaries, evaluation, latency/cost/reliability.
-
-Acceptance: build a bounded AI capability with explicit inputs, outputs, failure handling, and evaluation cases; measure quality and operational behavior; explain where deterministic code is preferable.
-
-### 6. MCP, agents, and AI task execution platform
-
-Topics: MCP, tool contracts, agent loops, persistence, permissions, observability, evaluations, human approval, orchestration.
-
-Acceptance: evolve the job platform through documented increments into an AI task execution platform; demonstrate tool execution and recovery under failures; evaluate behavior against repeatable scenarios; defend the system boundaries and tradeoffs.
-
-## Working method
-
-Use real project work in 90–120 minute deep-work sessions. Discuss the problem and design before implementation. The learner implements; the coach provides questions, hints, and review. Record implementation, verification, and understanding separately. Feature count is not a measure of learning progress.
-
-Plan sessions by expected learning value and relevance to the long-term Software Engineering and AI Engineering goals, not only by roadmap order. Prefer real product behavior over continued development of generic scheduler features when the scheduler already supports the learning objective.
+The original long-term direction (AI-enabled systems, MCP, agent platforms) is parked. Revisit it once the job search is done.

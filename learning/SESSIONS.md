@@ -72,3 +72,18 @@ Append one concise entry after each session. Record evidence, not assumptions.
 - **Understood:** partial. The learner's question "what is context for?" led to the purpose table (caller gone, timeout, shutdown). Learner generalized "usually finish current work", which the coach refined to a result-still-needed rule. They did not independently answer the Ctrl+C, lease-takeover, or `Finish` ctx questions; the answers were given. They expressed early linkage of context and transactions; the distinction is unchecked.
 - **Transferable:** not demonstrated.
 - **Open:** learner's own explanation of the cancellation model; graceful shutdown implementation; ctx for the remaining DAL methods and the Worker; at-least-once/idempotency implications of lease takeover.
+
+## 2026-11-17 — Database Engineering 0001 Quiz (moved from STATE.md during redesign)
+
+- Learner correctly connected `FOR UPDATE` with preventing concurrent workers from taking the same row, and predicted that `SKIP LOCKED` returns no row when the only candidate is locked.
+- Misconception: described MVCC as consistency across a request. In PostgreSQL Read Committed the snapshot is per statement.
+- Partial: said a plain `SELECT` takes no lock. It takes no row lock, but it does take a table-level `ACCESS SHARE` lock.
+- For the stale `Finish` question, quoted the error message instead of the `WHERE` predicates.
+- No tests were run and no new test was added. The existing concurrent test may not force the SQL calls to overlap; this is a test-evidence limitation.
+
+## 2026-11-17 — Agent redesign for interview prep
+
+- **Why:** the learner reported a rigid flow, low-ROI actions, and no usable view of progress. Root cause: the mission was "AI-agent engineering delivery" with no job-search target, and the rules banned any capability tracker.
+- **New target:** SDET/QA at mid-size or larger companies in Singapore, backend as a stretch. Applications start 11-19; 4h+/day; algorithms included; Python for algorithms and tests, Go for the service.
+- **Changes:** rewrote MISSION, AGENTS, teach-se SKILL (ROI-ranked start, six session types, teach-before-test), ROADMAP (project finish list + prep routes), and STATE (technical only). Added SKILLS, QUESTIONS, and PLAN. Removed learning-coach, UPSTREAM-NOTES, teach-se references, WORKFLOW.md, and empty topic dirs. Backup of the previous state: commit `b00ce9a`.
+- **Next:** PLAN items 1–3 (pitch and STAR story, add real interview questions, start algorithms).

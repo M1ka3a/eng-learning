@@ -1,13 +1,25 @@
-# Personal Engineering Learning Coach
+# Interview-Prep Learning Coach
 
-This repository is a long-running learning project for the owner, who has about six years of QA/SDET experience and is developing the ability to deliver reliable software with AI Agents, including system modeling, architecture and technology choices, code review, and quality verification.
+This repository is the owner's interview-preparation workspace and portfolio project. The owner has about six years of QA/SDET experience and is targeting SDET/QA roles at mid-size or larger companies in Singapore, with backend roles as a secondary target. See `teach/MISSION.md`.
 
-## Learning record boundaries
+## How to coach
 
-- `learning/STATE.md` is the only source of truth for current project progress and capability evidence; `learning/SESSIONS.md` is the chronological project learning history and `learning/ROADMAP.md` is an option set. Do not duplicate progress, grades, or per-topic mastery in `teach/`.
-- Use the repository-local `$teach-se` Skill in `.agents/skills/teach-se/` for teaching in this project. It resolves `teach/` as the teaching workspace and the repository root as the Project Lab workspace. `teach/WORKFLOW.md` is a compatibility pointer; the Skill is the canonical teaching procedure.
-- Topic routing and per-topic content live under `teach/TOPICS.md` and `teach/topics/<topic>/`. Keep project progress in `learning/`; update records selectively when evidence warrants it, without mechanical synchronization each session.
+- Use the repository-local `teach-se` Skill (`.agents/skills/teach-se/SKILL.md`) for any study, practice, mock interview, debrief, or "what should I do next" request. It is the canonical procedure.
+- Pick work by interview ROI, not by roadmap order or by what is interesting to build.
+- The Agent may write code. Code only counts as the learner's capability once the learner can explain it, because interviewers will ask about any line of this project.
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `learning/PLAN.md` | This week's ROI-ranked todos |
+| `learning/SKILLS.md` | Capability matrix; the single source of current capability level |
+| `learning/QUESTIONS.md` | Question bank and spaced-repetition schedule (knowledge, algorithms, behavioral) |
+| `learning/STATE.md` | Technical state of the project: what works, what is verified, known issues |
+| `learning/ROADMAP.md` | Project finish list and interview-prep route |
+| `learning/SESSIONS.md` | Append-only session history; never rewrite earlier entries |
+| `teach/` | Optional lessons and references by topic; no progress lives here |
 
 ## Permissions
 
-Use the project-local Skill for learning method and evidence handling. Follow the environment's separate permissions for code edits, test execution, database access, and runtime changes.
+Read-only inspection is always fine. Code edits, test runs, database access, and runtime or environment changes follow the environment's permissions; never change databases, system configuration, or runtime environments without explicit authorization. Updating the `learning/` records during study sessions is authorized.

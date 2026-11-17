@@ -1,6 +1,6 @@
 # Testing & Delivery
 
-Knowledge map for building confidence from requirements through operation and release. Implementation and verification evidence belongs in [learning/STATE.md](../../../learning/STATE.md).
+Knowledge map for building confidence from requirements through operation and release. Implementation and verification evidence belongs in [learning/SKILLS.md](../../../learning/SKILLS.md).
 
 ## Knowledge map
 
@@ -29,4 +29,4 @@ No topic-local artifacts yet. Link cross-topic material from its canonical locat
 
 ## Capabilities to verify
 
-Consult [learning/STATE.md](../../../learning/STATE.md). Check that tests support the stated claim, failures are reproducible, integration environments are isolated, and release risks are visible.
+Consult [learning/SKILLS.md](../../../learning/SKILLS.md). Check that tests support the stated claim, failures are reproducible, integration environments are isolated, and release risks are visible.

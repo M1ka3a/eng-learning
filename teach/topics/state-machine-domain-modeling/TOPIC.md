@@ -1,6 +1,6 @@
 # State Machine & Domain Modeling
 
-Knowledge map for turning business needs into explicit behavior, contracts, and enforceable invariants. Progress evidence belongs in [learning/STATE.md](../../../learning/STATE.md).
+Knowledge map for turning business needs into explicit behavior, contracts, and enforceable invariants. Progress evidence belongs in [learning/SKILLS.md](../../../learning/SKILLS.md).
 
 ## Knowledge map
 
@@ -28,4 +28,4 @@ No topic-specific artifacts yet. Cross-topic work should have one canonical home
 
 ## Capabilities to verify
 
-Consult [learning/STATE.md](../../../learning/STATE.md). Check translating ambiguous statements into acceptance criteria, identifying invalid states, assigning transition ownership, and separating evidence from product assumptions.
+Consult [learning/SKILLS.md](../../../learning/SKILLS.md). Check translating ambiguous statements into acceptance criteria, identifying invalid states, assigning transition ownership, and separating evidence from product assumptions.

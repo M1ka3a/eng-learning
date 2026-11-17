@@ -1,6 +1,6 @@
 # Concurrency & Reliability
 
-Knowledge map for coordinating work safely under cancellation, contention, crashes, and partial failure. Capability evidence is in [learning/STATE.md](../../../learning/STATE.md).
+Knowledge map for coordinating work safely under cancellation, contention, crashes, and partial failure. Capability evidence is in [learning/SKILLS.md](../../../learning/SKILLS.md).
 
 ## Knowledge map
 
@@ -30,4 +30,4 @@ Create topic-local material only when a concrete learning need exists. For the s
 
 ## Capabilities to verify
 
-Check [learning/STATE.md](../../../learning/STATE.md): Context vs transaction, bounded graceful shutdown, Lease takeover and stale completion, and actual test guarantees remain evidence-led questions.
+Check [learning/SKILLS.md](../../../learning/SKILLS.md): Context vs transaction, bounded graceful shutdown, Lease takeover and stale completion, and actual test guarantees remain evidence-led questions.

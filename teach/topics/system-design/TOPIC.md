@@ -1,6 +1,6 @@
 # System Design
 
-Knowledge map for choosing system boundaries and evaluating whole-system tradeoffs. Project milestones are tracked in [learning/STATE.md](../../../learning/STATE.md).
+Knowledge map for choosing system boundaries and evaluating whole-system tradeoffs. Project milestones are tracked in [learning/SKILLS.md](../../../learning/SKILLS.md).
 
 ## Knowledge map
 
@@ -28,4 +28,4 @@ No topic-local artifacts yet. Link cross-topic lessons with one canonical path w
 
 ## Capabilities to verify
 
-Use [learning/STATE.md](../../../learning/STATE.md) and decisions the learner explained. Check assumptions, alternatives, failure propagation, and whether a queue/cache/service boundary earns its complexity.
+Use [learning/SKILLS.md](../../../learning/SKILLS.md) and decisions the learner explained. Check assumptions, alternatives, failure propagation, and whether a queue/cache/service boundary earns its complexity.

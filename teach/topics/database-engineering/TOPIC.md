@@ -1,6 +1,6 @@
 # Database Engineering
 
-Knowledge map for reasoning about relational data behavior and performance. Project progress is tracked only in [learning/STATE.md](../../../learning/STATE.md).
+Knowledge map for reasoning about relational data behavior and performance. Project progress is tracked only in [learning/SKILLS.md](../../../learning/SKILLS.md).
 
 ## Knowledge map
 
@@ -39,4 +39,4 @@ No formal Lab has been created yet. Add one here when a scoped, valuable project
 
 ## Capabilities to verify
 
-Use [project evidence](../../../learning/STATE.md), not this map, to determine current capability. Useful checks include predicting transaction outcomes, explaining a lock interaction, selecting an index from query/workload evidence, and distinguishing an isolated test schema from production migration compatibility.
+Use [project evidence](../../../learning/SKILLS.md), not this map, to determine current capability. Useful checks include predicting transaction outcomes, explaining a lock interaction, selecting an index from query/workload evidence, and distinguishing an isolated test schema from production migration compatibility.
